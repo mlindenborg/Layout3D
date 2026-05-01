@@ -9,6 +9,12 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useEffect, useState } from "react";
+import {
+  getCurrentUser,
+  signIn as puterSignIn,
+  signOut as puterSignOut,
+} from "../lib/puter.action";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -22,6 +28,12 @@ export const links: Route.LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
   },
 ];
+//Ype declated in the tye.d.ts file for the Authstate
+const DEFAULT_AUTH_STATE: AuthState = {
+  isSignedIn: false,
+  userName: null,
+  userId: null,
+};
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -42,7 +54,44 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  //Usestate function to set the default state to DEFAULT_AUTH_STATE
+  const [authState, setAuthState] = useState<AuthState>(DEFAULT_AUTH_STATE);
+  //Try to get the user from puter and if we get a user we set the state according to the Authstate declaration
+  const refreshAuth = async () => {
+    try {
+      const user = await getCurrentUser();
+      setAuthState({
+        isSignedIn: !!user,
+        userName: user?.username || null,
+        userId: user?.uuid || null,
+      });
+      return !!user;
+    } catch {
+      setAuthState(DEFAULT_AUTH_STATE);
+      return false;
+    }
+  };
+  //Make a useeffect to simply call the refresAuth as soon as we load the app
+  useEffect(() => {
+    refreshAuth();
+  }, []);
+  //SignIn function to await the signIn from puter and refresing the auth
+  const signIn = async () => {
+    await puterSignIn();
+    return await refreshAuth();
+  };
+  //SignOut function to await the signOut from puter and refresing the auth
+  const signOut = async () => {
+    await puterSignOut();
+    return await refreshAuth();
+  };
+
+  return (
+    //To be able to use the functions we have created regarding auth we need to pass them to the router as context
+    <main className="min-h-screen bg-background text-foreground relative z-10">
+      <Outlet context={{ ...authState, refreshAuth, signIn, signOut }} />
+    </main>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
