@@ -2,6 +2,8 @@ import Navbar from "~/components/Navbar";
 import type { Route } from "./+types/home";
 import { ArrowRight, ArrowUpRight, Clock, Layers } from "lucide-react";
 import Button from "~/components/ui/Button";
+import Upload from "~/components/Upload";
+import { useNavigate } from "react-router";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,6 +13,16 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function Home() {
+  const timestamp = "01/01/2026";
+  const navigate = useNavigate();
+  const handleUploadComplete = async (base64Image: string) => {
+    console.log(base64Image);
+    //get access to id for image
+    const newId = Date.now().toString;
+    //navigate to the visualizer page
+    navigate(`/visualizer/${newId}`);
+    return true;
+  };
   return (
     <div className="home">
       <Navbar />
@@ -44,7 +56,7 @@ export default function Home() {
               <h3>Upload your floor plan</h3>
               <p>Supports JPG, PNG formats up to 10MB</p>
             </div>
-            <p>Upload images</p>
+            <Upload onComplete={handleUploadComplete} />
           </div>
         </div>
       </section>
@@ -74,7 +86,7 @@ export default function Home() {
                   <h3>Project Copenhagen</h3>
                   <div className="meta">
                     <Clock size={12} />
-                    <span>{new Date("01.01.2026").toLocaleDateString()}</span>
+                    <span>{new Date(timestamp).toDateString()}</span>
                     <span>By MLI</span>
                   </div>
                 </div>
