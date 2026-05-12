@@ -27,16 +27,32 @@ const Upload = ({ onComplete }: UploadProps) => {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-    const timer = setTimeout(() => onComplete(base64Ref.current), REDIRECT_DELAY_MS);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(
+      () => onComplete(base64Ref.current),
+      REDIRECT_DELAY_MS,
+    );
+    return () => {
+      clearTimeout(timer);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [progress, onComplete]);
 
   const processFile = (selected: File) => {
     if (!isSignedIn) return;
+    const allowed = ["image/jpeg", "image/png"];
+    const maxBytes = 50 * 1024 * 1024;
+    if (!allowed.includes(selected.type) || selected.size > maxBytes) return;
     setFile(selected);
     setProgress(0);
 
     const reader = new FileReader();
+    reader.onerror = () => {
+      setFile(null);
+      setProgress(0);
+    };
     reader.onload = (e) => {
       base64Ref.current = e.target?.result as string;
       intervalRef.current = setInterval(() => {

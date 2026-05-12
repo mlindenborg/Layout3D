@@ -89,7 +89,7 @@ export default function App() {
   return (
     //To be able to use the functions we have created regarding auth we need to pass them to the router as context
     <main className="min-h-screen bg-background text-foreground relative z-10">
-      <Outlet context={{ ...authState, refreshAuth, signIn, signOut }} />;
+      <Outlet context={{ ...authState, refreshAuth, signIn, signOut }} />
     </main>
   );
 }
