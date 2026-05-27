@@ -43,8 +43,9 @@ router.post(
       const project = body?.project;
 
       //if we do not have a project with id and sourceimage throw an error
-      if (!project.id || !project?.sourceimage)
-        return jsonError(400, "Project not found");
+      if (!project?.id || !project?.sourceImage) {
+        return jsonError(400, "Missing project id or sourceImage");
+      }
 
       //But if we have a project id we can form a new payload with all current info about the project
       const payload = {
